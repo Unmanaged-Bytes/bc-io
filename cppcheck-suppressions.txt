@@ -1,0 +1,31 @@
+// SPDX-License-Identifier: MIT
+//
+// False-positive unusedFunction suppressions for bc-io.
+//
+// Categories :
+//
+// 1. bc-core inline helpers (*_unaligned load/store) used by external
+//    consumers only.  bc-io itself does not call them but the header is
+//    exposed transitively.
+//
+// 2. Public API (bc_io_stream_advise) used by external consumers.
+//
+// 3. __wrap_* stubs in test files : linker-level intercept hooks activated
+//    via -Wl,--wrap= and never called directly from C code.
+
+// --- bc-core inline helpers ---
+unusedFunction:*/bc_core_math.h
+
+// --- Linker wrap hooks in test files ---
+unusedFunction:*/test_bc_io_file_inode_set_errors.c
+unusedFunction:*/test_bc_io_stream_allocation_wrap.c
+unusedFunction:*/test_bc_io_stream_io_wrap.c
+unusedFunction:*/test_bc_io_stream_open_wrap.c
+unusedFunction:*tests/*_wrap.c
+unusedFunction:*/tests/*_wrap.c
+
+// --- Informational notes (not real defects) ---
+unmatchedSuppression
+missingIncludeSystem:*
+normalCheckLevelMaxBranches:*
+checkersReport
