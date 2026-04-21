@@ -68,6 +68,7 @@ pkg.generate(
 
 install_headers(
   'include/public/bc_io.h',
+  'include/public/bc_io_dirent_reader.h',
   'include/public/bc_io_file.h',
   'include/public/bc_io_file_inode.h',
   'include/public/bc_io_file_open.h',

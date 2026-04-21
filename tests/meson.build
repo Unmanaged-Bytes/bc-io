@@ -170,6 +170,12 @@ test_bc_io_file_helpers = executable('test_bc_io_file_helpers',
 )
 test('bc_io_file_helpers', test_bc_io_file_helpers)
 
+test_bc_io_dirent_reader = executable('test_bc_io_dirent_reader',
+    'test_bc_io_dirent_reader.c',
+    dependencies : [cmocka_dep, bc_io_dep],
+)
+test('bc_io_dirent_reader', test_bc_io_dirent_reader)
+
 test_bc_io_stream_advise = executable('test_bc_io_stream_advise',
     'test_bc_io_stream_advise.c',
     dependencies : [cmocka_dep, bc_io_dep],
