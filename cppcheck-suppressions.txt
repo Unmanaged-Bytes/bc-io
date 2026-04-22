@@ -16,6 +16,15 @@
 // --- bc-core inline helpers ---
 unusedFunction:*/bc_core_math.h
 
+// --- Public API functions in bc-io sources themselves ---
+// cppcheck analyses the lib in isolation via compile_commands.json
+// (lib sources only, not tests), so public functions consumed by
+// downstream tools (bc-hash, bc-seek, bc-duplicate, bc-count) appear
+// unused.
+unusedFunction:*/src/file/*.c
+unusedFunction:*/src/mmap/*.c
+unusedFunction:*/src/stream/*.c
+
 // --- Linker wrap hooks in test files ---
 unusedFunction:*/test_bc_io_file_inode_set_errors.c
 unusedFunction:*/test_bc_io_stream_allocation_wrap.c
