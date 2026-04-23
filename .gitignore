@@ -5,3 +5,8 @@ build/
 .vscode/
 .idea/
 compile_commands.json
+debian/.debhelper/
+debian/debhelper-build-stamp
+debian/files
+debian/libbc-io-dev/
+debian/libbc-io-dev.substvars
