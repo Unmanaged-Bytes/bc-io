@@ -187,3 +187,9 @@ test_bc_io_symlink_safety = executable('test_bc_io_symlink_safety',
     dependencies : [cmocka_dep, bc_io_dep],
 )
 test('bc_io_symlink_safety', test_bc_io_symlink_safety)
+
+test_bc_io_umbrella_header_exposes_all_macros = executable('test_bc_io_umbrella_header_exposes_all_macros',
+    'test_bc_io_umbrella_header_exposes_all_macros.c',
+    dependencies : [cmocka_dep, bc_io_dep],
+)
+test('bc_io_umbrella_header_exposes_all_macros', test_bc_io_umbrella_header_exposes_all_macros)

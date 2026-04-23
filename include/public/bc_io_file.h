@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 
-#ifndef BC_IO_H
-#define BC_IO_H
+#ifndef BC_IO_FILE_H
+#define BC_IO_FILE_H
 
 #include "bc_io_file_path.h"
 #include "bc_io_file_inode.h"
@@ -14,4 +14,4 @@
 #define BC_IO_MAX_PATH_LENGTH ((size_t)4096)
 #define BC_IO_MMAP_DEFAULT_THRESHOLD ((size_t)(256 * 1024))
 
-#endif /* BC_IO_H */
+#endif /* BC_IO_FILE_H */
