@@ -67,7 +67,7 @@ bool bc_io_mmap_file(bc_allocators_context_t* memory_context, const char* path, 
         return false;
     }
 
-    int file_descriptor = open(path, O_RDONLY | O_CLOEXEC);
+    int file_descriptor = open(path, O_RDONLY | O_CLOEXEC | O_NOFOLLOW);
     if (file_descriptor < 0) { /* GCOVR_EXCL_BR_LINE -- OS-level open failure */
         return false;          /* GCOVR_EXCL_LINE -- OS-level open failure */
     }

@@ -82,9 +82,9 @@ bool bc_io_stream_io_open_file(const char* path, bc_io_stream_mode_t mode, int* 
     int flags;
 
     if (mode == BC_IO_STREAM_MODE_READ) {
-        flags = O_RDONLY | O_CLOEXEC;
+        flags = O_RDONLY | O_CLOEXEC | O_NOFOLLOW;
     } else {
-        flags = O_WRONLY | O_CREAT | O_TRUNC | O_CLOEXEC;
+        flags = O_WRONLY | O_CREAT | O_TRUNC | O_CLOEXEC | O_NOFOLLOW;
     }
 
     int file_descriptor = open(path, flags, 0644);

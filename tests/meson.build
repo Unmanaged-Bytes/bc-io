@@ -181,3 +181,9 @@ test_bc_io_stream_advise = executable('test_bc_io_stream_advise',
     dependencies : [cmocka_dep, bc_io_dep],
 )
 test('bc_io_stream_advise', test_bc_io_stream_advise)
+
+test_bc_io_symlink_safety = executable('test_bc_io_symlink_safety',
+    'test_bc_io_symlink_safety.c',
+    dependencies : [cmocka_dep, bc_io_dep],
+)
+test('bc_io_symlink_safety', test_bc_io_symlink_safety)

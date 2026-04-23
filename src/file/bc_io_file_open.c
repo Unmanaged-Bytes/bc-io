@@ -45,7 +45,7 @@ static bool bc_io_file_open_resolve_descriptor(const char* path, const bc_io_fil
     if (options->use_noatime) {
         return bc_io_file_open_for_read(path, additional_flags, out_file_descriptor);
     }
-    int flags = O_RDONLY | O_CLOEXEC | additional_flags;
+    int flags = O_RDONLY | O_CLOEXEC | O_NOFOLLOW | additional_flags;
     int file_descriptor = open(path, flags);
     if (file_descriptor < 0) {
         return false;
