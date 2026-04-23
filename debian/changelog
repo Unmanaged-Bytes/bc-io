@@ -1,3 +1,16 @@
+libbc-io (1.2.0-1) stable; urgency=medium
+
+  * feat(walk): add bc_io_walk_parallel, generic parallel filesystem walk
+    with callback-based filter/visit/on_error API. Extracted from the
+    tool-specific walks in bc-hash, bc-duplicate and bc-seek per the
+    audit 2026-04-23 Phase 4 plan.
+  * Adds bc-concurrency as a new direct dependency (no cycle: bc-concurrency
+    itself depends only on bc-core and bc-allocators).
+  * Bumps Build-Depends to libbc-core-dev (>= 1.4.0) for the new I/O
+    module (writer/reader/fmt) introduced in Phase 2.5.
+
+ -- Younes Benmoussa <younes.benmoussa@pm.me>  Thu, 23 Apr 2026 22:47:00 +0100
+
 libbc-io (1.1.1-1) stable; urgency=medium
 
   * test(fuzz): libFuzzer harnesses for path_join and inode_set + seed
