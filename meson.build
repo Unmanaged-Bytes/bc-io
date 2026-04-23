@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 
 project('bc-io', 'c',
-  version : '1.1.1',
+  version : '1.2.0',
   license : 'MIT',
   default_options : [
     'c_std=c11',
@@ -52,6 +52,7 @@ pkg = import('pkgconfig')
 
 bc_core_dep = dependency('bc-core')
 bc_allocators_dep = dependency('bc-allocators')
+bc_concurrency_dep = dependency('bc-concurrency')
 
 bc_io_public_inc = include_directories('include/public')
 bc_io_internal_inc = include_directories('include/internal')
@@ -75,6 +76,7 @@ install_headers(
   'include/public/bc_io_file_path.h',
   'include/public/bc_io_mmap.h',
   'include/public/bc_io_stream.h',
+  'include/public/bc_io_walk.h',
   subdir : 'bc',
 )
 

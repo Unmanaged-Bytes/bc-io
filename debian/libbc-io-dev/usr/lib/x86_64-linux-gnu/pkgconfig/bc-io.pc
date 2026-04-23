@@ -1,0 +1,10 @@
+prefix=/usr
+includedir=${prefix}/include
+libdir=${prefix}/lib/x86_64-linux-gnu
+
+Name: bc-io
+Description: Unified I/O : streams, filesystem helpers, mmap
+Version: 1.1.0
+Requires: bc-core, bc-allocators
+Libs: -L${libdir} -lbc-io
+Cflags: -I${includedir} -I${includedir}/bc

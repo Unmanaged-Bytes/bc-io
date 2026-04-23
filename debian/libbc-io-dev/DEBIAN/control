@@ -1,0 +1,18 @@
+Package: libbc-io-dev
+Source: libbc-io
+Version: 1.1.0-1
+Architecture: amd64
+Maintainer: Younes Benmoussa <younes.benmoussa@pm.me>
+Installed-Size: 67
+Depends: libbc-core-dev (>= 1.3.0), libbc-allocators-dev (>= 1.2.0)
+Section: libdevel
+Priority: optional
+Multi-Arch: same
+Homepage: https://unmanaged-bytes.com/
+Description: bc-* ecosystem I/O primitives (development files)
+ Open/close file wrappers, path and inode helpers, mmap, and a
+ buffered stream with explicit advise hints. Thin Linux-specific
+ layer above libc syscalls.
+ .
+ This package ships the static library, public headers, and
+ pkg-config descriptor required to build against bc-io.

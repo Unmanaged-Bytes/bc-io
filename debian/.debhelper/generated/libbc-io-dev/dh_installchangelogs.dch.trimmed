@@ -1,0 +1,22 @@
+libbc-io (1.1.0-1) stable; urgency=medium
+
+  * feat(dirent): add `bc_io_dirent_reader` public API — raw getdents64
+    iterator with an 8 KB stack buffer, skipping `.`/`..`, returning
+    {name, name_length, d_type}. Used by bc-seek, bc-hash and
+    bc-duplicate to avoid the fdopendir/readdir/closedir path and its
+    glibc-internal dup / fstat / fcntl probes.
+  * No existing symbol changed; adds one header and one translation
+    unit. Depends only on bc-core (bc_core_length).
+
+ -- Younes Benmoussa <younes.benmoussa@pm.me>  Tue, 21 Apr 2026 21:35:00 +0000
+
+libbc-io (1.0.0-1) stable; urgency=medium
+
+  * Initial public release.
+  * File primitives: open/close wrappers, path and inode helpers.
+  * Memory-mapped file helpers (mmap / munmap).
+  * Buffered stream with readahead / sequential / random advise hints.
+  * Full sanitizer coverage (asan / tsan / ubsan / memcheck) and
+    cppcheck-clean sources.
+
+ -- Younes Benmoussa <younes.benmoussa@pm.me>  Sun, 19 Apr 2026 12:00:00 +0000

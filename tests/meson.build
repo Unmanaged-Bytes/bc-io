@@ -193,3 +193,9 @@ test_bc_io_umbrella_header_exposes_all_macros = executable('test_bc_io_umbrella_
     dependencies : [cmocka_dep, bc_io_dep],
 )
 test('bc_io_umbrella_header_exposes_all_macros', test_bc_io_umbrella_header_exposes_all_macros)
+
+test_bc_io_walk_parallel = executable('test_bc_io_walk_parallel',
+    'test_bc_io_walk_parallel.c',
+    dependencies : [cmocka_dep, bc_io_dep, bc_concurrency_dep],
+)
+test('bc_io_walk_parallel', test_bc_io_walk_parallel)

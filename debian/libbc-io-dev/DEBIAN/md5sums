@@ -1,0 +1,13 @@
+964ae442f45aa915d88ef786e52e8193  usr/include/bc/bc_io.h
+bd0ae49470af2d1ab8a2c2f32a04bb48  usr/include/bc/bc_io_dirent_reader.h
+a8b7a994f5690685836b66bac20a2a70  usr/include/bc/bc_io_file.h
+5ad5175bca973490aec49daa1cf0a83d  usr/include/bc/bc_io_file_inode.h
+f98ca1aff033fe2e8c69db243c32a866  usr/include/bc/bc_io_file_open.h
+72e574c7bd5892bb6e30474c7a78568b  usr/include/bc/bc_io_file_path.h
+df4982b39bc15f67a02076a302658002  usr/include/bc/bc_io_mmap.h
+a7b32fb6aea7f544bd12812c0e07f411  usr/include/bc/bc_io_stream.h
+f529368571fd50953667bf7874804ccf  usr/lib/x86_64-linux-gnu/libbc-io.a
+21f8f68adae2b5f9510cf2eccf005927  usr/lib/x86_64-linux-gnu/pkgconfig/bc-io.pc
+b6a47c20332676dfb2044f4600c3b926  usr/share/doc/libbc-io-dev/changelog.Debian.gz
+d34add07d88b17f01aa4b60f4a9dadf2  usr/share/doc/libbc-io-dev/changelog.gz
+60f43d5282c99ffd68a443852ff80279  usr/share/doc/libbc-io-dev/copyright
