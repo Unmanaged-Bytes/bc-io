@@ -134,7 +134,9 @@ static void bc_io_walk_process_directory(bc_io_walk_shared_t* shared, const char
         size_t resolved_file_size = 0;
         dev_t resolved_device_id = 0;
         ino_t resolved_inode_number = 0;
-        bool metadata_already_known = false;
+        long resolved_modification_time = 0;
+        unsigned int resolved_permission_mask = 0;
+        bool stat_populated = false;
         if (current_entry.d_type != DT_UNKNOWN) {
             bc_io_file_dtype_to_entry_type(current_entry.d_type, &entry_type);
         } else {
@@ -144,13 +146,18 @@ static void bc_io_walk_process_directory(bc_io_walk_shared_t* shared, const char
                 bc_io_walk_report_error(shared, child_path_buffer, "stat", errno);
                 continue;
             }
-            metadata_already_known = true;
+            resolved_modification_time = (long)modification_time_value;
+            stat_populated = true;
         }
 
         bc_io_walk_entry_kind_t entry_kind = BC_IO_WALK_ENTRY_OTHER;
         bc_io_walk_entry_kind_from_type(entry_type, &entry_kind);
 
-        if ((entry_kind == BC_IO_WALK_ENTRY_FILE || entry_kind == BC_IO_WALK_ENTRY_DIRECTORY) && !metadata_already_known) {
+        bool needs_stat = !stat_populated
+                          && (entry_kind == BC_IO_WALK_ENTRY_FILE
+                              || entry_kind == BC_IO_WALK_ENTRY_DIRECTORY
+                              || (entry_kind == BC_IO_WALK_ENTRY_SYMLINK && shared->config->follow_symlinks));
+        if (needs_stat) {
             int stat_flags = shared->config->follow_symlinks ? 0 : AT_SYMLINK_NOFOLLOW;
             struct stat stat_buffer;
             if (fstatat(directory_file_descriptor, current_entry.name, &stat_buffer, stat_flags) != 0) {
@@ -160,6 +167,16 @@ static void bc_io_walk_process_directory(bc_io_walk_shared_t* shared, const char
             resolved_file_size = (size_t)stat_buffer.st_size;
             resolved_device_id = stat_buffer.st_dev;
             resolved_inode_number = stat_buffer.st_ino;
+            resolved_modification_time = (long)stat_buffer.st_mtime;
+            resolved_permission_mask = (unsigned int)(stat_buffer.st_mode & 07777);
+            if (entry_kind == BC_IO_WALK_ENTRY_SYMLINK && shared->config->follow_symlinks) {
+                if (S_ISREG(stat_buffer.st_mode)) {
+                    entry_kind = BC_IO_WALK_ENTRY_FILE;
+                } else if (S_ISDIR(stat_buffer.st_mode)) {
+                    entry_kind = BC_IO_WALK_ENTRY_DIRECTORY;
+                }
+            }
+            stat_populated = true;
         }
 
         bc_io_walk_entry_t walk_entry = {
@@ -170,6 +187,9 @@ static void bc_io_walk_process_directory(bc_io_walk_shared_t* shared, const char
             .depth = directory_depth + 1U,
             .device_id = resolved_device_id,
             .inode_number = resolved_inode_number,
+            .modification_time_seconds = resolved_modification_time,
+            .permission_mask = resolved_permission_mask,
+            .stat_populated = stat_populated,
         };
 
         bool accepted = bc_io_walk_entry_passes_filter(shared, &walk_entry);

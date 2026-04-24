@@ -27,6 +27,9 @@ typedef struct bc_io_walk_entry {
     size_t depth;
     dev_t device_id;
     ino_t inode_number;
+    long modification_time_seconds;
+    unsigned int permission_mask;
+    bool stat_populated;
 } bc_io_walk_entry_t;
 
 typedef bool (*bc_io_walk_filter_fn)(const bc_io_walk_entry_t* entry, void* user_data);
