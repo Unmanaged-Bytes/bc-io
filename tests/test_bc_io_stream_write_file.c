@@ -197,7 +197,7 @@ static void test_write_on_read_stream(void** state)
     const char* path = "/tmp/bc_io_stream_test_write_on_read.bin";
 
     int fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-    write(fd, "hello", 5);
+    ssize_t _w1 = write(fd, "hello", 5); (void)_w1;
     close(fd);
 
     bc_allocators_context_t* memory_context;
@@ -267,7 +267,7 @@ static void test_flush_read_stream(void** state)
     const char* path = "/tmp/bc_io_stream_test_flush_read.bin";
 
     int fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-    write(fd, "data", 4);
+    ssize_t _w2 = write(fd, "data", 4); (void)_w2;
     close(fd);
 
     bc_allocators_context_t* memory_context;
@@ -322,7 +322,7 @@ static void test_write_truncates_file(void** state)
     int fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
     unsigned char old_data[1024];
     bc_core_fill(old_data, 1024, (unsigned char)0xEE);
-    write(fd, old_data, 1024);
+    ssize_t _w3 = write(fd, old_data, 1024); (void)_w3;
     close(fd);
 
     bc_allocators_context_t* memory_context;
