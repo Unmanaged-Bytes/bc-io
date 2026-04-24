@@ -88,7 +88,11 @@ static void bc_io_walk_process_directory(bc_io_walk_shared_t* shared, const char
         return;
     }
 
-    int directory_file_descriptor = open(directory_path, O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
+    int open_flags = O_RDONLY | O_DIRECTORY | O_CLOEXEC;
+    if (!shared->config->follow_symlinks) {
+        open_flags |= O_NOFOLLOW;
+    }
+    int directory_file_descriptor = open(directory_path, open_flags);
     if (directory_file_descriptor < 0) {
         bc_io_walk_report_error(shared, directory_path, "open", errno);
         return;
@@ -113,7 +117,7 @@ static void bc_io_walk_process_directory(bc_io_walk_shared_t* shared, const char
         if (!has_entry) {
             break;
         }
-        if (current_entry.name[0] == '.') {
+        if (current_entry.name[0] == '.' && !shared->config->include_hidden) {
             continue;
         }
 
@@ -146,8 +150,9 @@ static void bc_io_walk_process_directory(bc_io_walk_shared_t* shared, const char
         bc_io_walk_entry_kind_from_type(entry_type, &entry_kind);
 
         if ((entry_kind == BC_IO_WALK_ENTRY_FILE || entry_kind == BC_IO_WALK_ENTRY_DIRECTORY) && !metadata_already_known) {
+            int stat_flags = shared->config->follow_symlinks ? 0 : AT_SYMLINK_NOFOLLOW;
             struct stat stat_buffer;
-            if (fstatat(directory_file_descriptor, current_entry.name, &stat_buffer, AT_SYMLINK_NOFOLLOW) != 0) {
+            if (fstatat(directory_file_descriptor, current_entry.name, &stat_buffer, stat_flags) != 0) {
                 bc_io_walk_report_error(shared, child_path_buffer, "stat", errno);
                 continue;
             }

@@ -41,6 +41,8 @@ typedef struct bc_io_walk_config {
     bc_concurrency_signal_handler_t* signal_handler;
 
     size_t queue_capacity;
+    bool follow_symlinks;
+    bool include_hidden;
 
     bc_io_walk_filter_fn filter;
     void* filter_user_data;
