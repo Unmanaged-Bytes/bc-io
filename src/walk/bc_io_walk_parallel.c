@@ -127,31 +127,33 @@ static void bc_io_walk_process_directory(bc_io_walk_shared_t* shared, const char
 
         bc_io_file_entry_type_t entry_type = BC_IO_ENTRY_TYPE_OTHER;
         size_t resolved_file_size = 0;
-        bool size_already_known = false;
+        dev_t resolved_device_id = 0;
+        ino_t resolved_inode_number = 0;
+        bool metadata_already_known = false;
         if (current_entry.d_type != DT_UNKNOWN) {
             bc_io_file_dtype_to_entry_type(current_entry.d_type, &entry_type);
         } else {
-            dev_t device_value = 0;
-            ino_t inode_value = 0;
             time_t modification_time_value = 0;
-            if (!bc_io_file_stat_if_unknown(directory_file_descriptor, current_entry.name, &entry_type, &device_value, &inode_value,
+            if (!bc_io_file_stat_if_unknown(directory_file_descriptor, current_entry.name, &entry_type, &resolved_device_id, &resolved_inode_number,
                                             &resolved_file_size, &modification_time_value)) {
                 bc_io_walk_report_error(shared, child_path_buffer, "stat", errno);
                 continue;
             }
-            size_already_known = true;
+            metadata_already_known = true;
         }
 
         bc_io_walk_entry_kind_t entry_kind = BC_IO_WALK_ENTRY_OTHER;
         bc_io_walk_entry_kind_from_type(entry_type, &entry_kind);
 
-        if (entry_kind == BC_IO_WALK_ENTRY_FILE && !size_already_known) {
-            struct stat file_stat_buffer;
-            if (fstatat(directory_file_descriptor, current_entry.name, &file_stat_buffer, AT_SYMLINK_NOFOLLOW) != 0) {
+        if ((entry_kind == BC_IO_WALK_ENTRY_FILE || entry_kind == BC_IO_WALK_ENTRY_DIRECTORY) && !metadata_already_known) {
+            struct stat stat_buffer;
+            if (fstatat(directory_file_descriptor, current_entry.name, &stat_buffer, AT_SYMLINK_NOFOLLOW) != 0) {
                 bc_io_walk_report_error(shared, child_path_buffer, "stat", errno);
                 continue;
             }
-            resolved_file_size = (size_t)file_stat_buffer.st_size;
+            resolved_file_size = (size_t)stat_buffer.st_size;
+            resolved_device_id = stat_buffer.st_dev;
+            resolved_inode_number = stat_buffer.st_ino;
         }
 
         bc_io_walk_entry_t walk_entry = {
@@ -159,6 +161,8 @@ static void bc_io_walk_process_directory(bc_io_walk_shared_t* shared, const char
             .absolute_path_length = child_path_length,
             .kind = entry_kind,
             .file_size = resolved_file_size,
+            .device_id = resolved_device_id,
+            .inode_number = resolved_inode_number,
         };
 
         bool accepted = bc_io_walk_entry_passes_filter(shared, &walk_entry);
