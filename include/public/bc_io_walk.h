@@ -24,12 +24,14 @@ typedef struct bc_io_walk_entry {
     size_t absolute_path_length;
     bc_io_walk_entry_kind_t kind;
     size_t file_size;
+    size_t depth;
     dev_t device_id;
     ino_t inode_number;
 } bc_io_walk_entry_t;
 
 typedef bool (*bc_io_walk_filter_fn)(const bc_io_walk_entry_t* entry, void* user_data);
 typedef bool (*bc_io_walk_visit_fn)(const bc_io_walk_entry_t* entry, void* user_data);
+typedef bool (*bc_io_walk_should_descend_fn)(const bc_io_walk_entry_t* entry, void* user_data);
 typedef void (*bc_io_walk_error_fn)(const char* path, const char* stage, int errno_value, void* user_data);
 
 typedef struct bc_io_walk_config {
@@ -46,6 +48,9 @@ typedef struct bc_io_walk_config {
 
     bc_io_walk_filter_fn filter;
     void* filter_user_data;
+
+    bc_io_walk_should_descend_fn should_descend;
+    void* should_descend_user_data;
 
     bc_io_walk_visit_fn visit;
     void* visit_user_data;

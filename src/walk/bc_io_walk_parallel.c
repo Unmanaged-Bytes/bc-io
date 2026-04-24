@@ -24,6 +24,7 @@
 typedef struct bc_io_walk_queue_entry {
     char absolute_path[BC_IO_MAX_PATH_LENGTH];
     size_t absolute_path_length;
+    size_t depth;
 } bc_io_walk_queue_entry_t;
 
 typedef struct bc_io_walk_shared {
@@ -82,7 +83,7 @@ static bool bc_io_walk_entry_kind_from_type(bc_io_file_entry_type_t type, bc_io_
     }
 }
 
-static void bc_io_walk_process_directory(bc_io_walk_shared_t* shared, const char* directory_path, size_t directory_path_length)
+static void bc_io_walk_process_directory(bc_io_walk_shared_t* shared, const char* directory_path, size_t directory_path_length, size_t directory_depth)
 {
     if (atomic_load_explicit(&shared->visit_failed, memory_order_relaxed)) {
         return;
@@ -166,6 +167,7 @@ static void bc_io_walk_process_directory(bc_io_walk_shared_t* shared, const char
             .absolute_path_length = child_path_length,
             .kind = entry_kind,
             .file_size = resolved_file_size,
+            .depth = directory_depth + 1U,
             .device_id = resolved_device_id,
             .inode_number = resolved_inode_number,
         };
@@ -190,16 +192,25 @@ static void bc_io_walk_process_directory(bc_io_walk_shared_t* shared, const char
                 }
             }
 
+            bool descend = true;
+            if (shared->config->should_descend != NULL) {
+                descend = shared->config->should_descend(&walk_entry, shared->config->should_descend_user_data);
+            }
+            if (!descend) {
+                continue;
+            }
+
             bc_io_walk_queue_entry_t sub_entry;
             bc_core_zero(&sub_entry, sizeof(sub_entry));
             bc_core_copy(sub_entry.absolute_path, child_path_buffer, child_path_length);
             sub_entry.absolute_path_length = child_path_length;
             sub_entry.absolute_path[child_path_length] = '\0';
+            sub_entry.depth = walk_entry.depth;
 
             atomic_fetch_add_explicit(&shared->outstanding_directory_count, 1, memory_order_relaxed);
             if (!bc_concurrency_queue_push(shared->directory_queue, &sub_entry)) {
                 atomic_fetch_sub_explicit(&shared->outstanding_directory_count, 1, memory_order_relaxed);
-                bc_io_walk_process_directory(shared, sub_entry.absolute_path, sub_entry.absolute_path_length);
+                bc_io_walk_process_directory(shared, sub_entry.absolute_path, sub_entry.absolute_path_length, sub_entry.depth);
             }
         }
     }
@@ -221,7 +232,7 @@ static void bc_io_walk_worker_task(void* task_argument)
 
         bc_io_walk_queue_entry_t entry;
         if (bc_concurrency_queue_pop(shared->directory_queue, &entry)) {
-            bc_io_walk_process_directory(shared, entry.absolute_path, entry.absolute_path_length);
+            bc_io_walk_process_directory(shared, entry.absolute_path, entry.absolute_path_length, entry.depth);
             atomic_fetch_sub_explicit(&shared->outstanding_directory_count, 1, memory_order_release);
             continue;
         }
