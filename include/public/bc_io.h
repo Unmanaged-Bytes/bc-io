@@ -9,6 +9,7 @@
 #include "bc_io_file_open.h"
 #include "bc_io_file_path.h"
 #include "bc_io_mmap.h"
+#include "bc_io_random.h"
 #include "bc_io_stream.h"
 #include "bc_io_walk.h"
 

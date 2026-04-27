@@ -78,7 +78,8 @@ static int teardown_map_fixture(void** state)
     fixture_t* fixture = *state;
     char command[1024];
     snprintf(command, sizeof(command), "rm -rf %s", fixture->root_directory);
-    int _sys_rc = system(command); (void)_sys_rc;
+    int _sys_rc = system(command);
+    (void)_sys_rc;
     bc_allocators_context_destroy(fixture->memory_context);
     free(fixture);
     return 0;

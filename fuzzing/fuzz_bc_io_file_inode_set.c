@@ -31,24 +31,24 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
         position += sizeof(inode);
 
         switch (operation) {
-            case 0: {
-                bool already_present = false;
-                (void)bc_io_file_inode_set_insert(inode_set, device, inode, &already_present);
-                break;
-            }
-            case 1: {
-                bool is_present = false;
-                (void)bc_io_file_inode_set_contains(inode_set, device, inode, &is_present);
-                break;
-            }
-            case 2: {
-                size_t current_size = 0;
-                (void)bc_io_file_inode_set_get_size(inode_set, &current_size);
-                break;
-            }
-            default:
-                (void)bc_io_file_inode_set_clear(inode_set);
-                break;
+        case 0: {
+            bool already_present = false;
+            (void)bc_io_file_inode_set_insert(inode_set, device, inode, &already_present);
+            break;
+        }
+        case 1: {
+            bool is_present = false;
+            (void)bc_io_file_inode_set_contains(inode_set, device, inode, &is_present);
+            break;
+        }
+        case 2: {
+            size_t current_size = 0;
+            (void)bc_io_file_inode_set_get_size(inode_set, &current_size);
+            break;
+        }
+        default:
+            (void)bc_io_file_inode_set_clear(inode_set);
+            break;
         }
     }
 
