@@ -44,8 +44,7 @@ bool bc_io_dirent_reader_next(bc_io_dirent_reader_t* reader, bc_io_dirent_entry_
             reader->cursor = 0;
         }
 
-        const struct bc_io_linux_dirent64* record =
-            (const struct bc_io_linux_dirent64*)(reader->buffer + reader->cursor);
+        const struct bc_io_linux_dirent64* record = (const struct bc_io_linux_dirent64*)(reader->buffer + reader->cursor);
         reader->cursor += record->d_reclen;
 
         const char* name = record->d_name;

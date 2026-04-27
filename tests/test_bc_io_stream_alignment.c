@@ -45,7 +45,8 @@ static void test_file_read_chunk_buffer_is_64_byte_aligned(void** state)
     void* write_data = NULL;
     bc_allocators_pool_allocate(test_memory, data_size, &write_data);
     bc_core_fill(write_data, data_size, (unsigned char)0xAB);
-    ssize_t _w = write(fd, write_data, data_size); (void)_w;
+    ssize_t _w = write(fd, write_data, data_size);
+    (void)_w;
     close(fd);
 
     bc_io_stream_t* stream = NULL;
@@ -72,7 +73,8 @@ static void test_file_read_non_multiple_buffer_size_is_still_aligned(void** stat
     void* write_data = NULL;
     bc_allocators_pool_allocate(test_memory, data_size, &write_data);
     bc_core_fill(write_data, data_size, (unsigned char)0xCD);
-    ssize_t _w = write(fd, write_data, data_size); (void)_w;
+    ssize_t _w = write(fd, write_data, data_size);
+    (void)_w;
     close(fd);
 
     bc_io_stream_t* stream = NULL;
@@ -98,7 +100,8 @@ static void test_pipe_read_chunk_buffer_is_64_byte_aligned(void** state)
     void* write_data = NULL;
     bc_allocators_pool_allocate(test_memory, data_size, &write_data);
     bc_core_fill(write_data, data_size, (unsigned char)0xEF);
-    ssize_t _w = write(fds[1], write_data, data_size); (void)_w;
+    ssize_t _w = write(fds[1], write_data, data_size);
+    (void)_w;
     close(fds[1]);
 
     bc_io_stream_t* stream = NULL;

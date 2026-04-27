@@ -75,6 +75,7 @@ install_headers(
   'include/public/bc_io_file_open.h',
   'include/public/bc_io_file_path.h',
   'include/public/bc_io_mmap.h',
+  'include/public/bc_io_random.h',
   'include/public/bc_io_stream.h',
   'include/public/bc_io_walk.h',
   subdir : 'bc',

@@ -83,7 +83,8 @@ static bool bc_io_walk_entry_kind_from_type(bc_io_file_entry_type_t type, bc_io_
     }
 }
 
-static void bc_io_walk_process_directory(bc_io_walk_shared_t* shared, const char* directory_path, size_t directory_path_length, size_t directory_depth)
+static void bc_io_walk_process_directory(bc_io_walk_shared_t* shared, const char* directory_path, size_t directory_path_length,
+                                         size_t directory_depth)
 {
     if (atomic_load_explicit(&shared->visit_failed, memory_order_relaxed)) {
         return;
@@ -141,8 +142,8 @@ static void bc_io_walk_process_directory(bc_io_walk_shared_t* shared, const char
             bc_io_file_dtype_to_entry_type(current_entry.d_type, &entry_type);
         } else {
             time_t modification_time_value = 0;
-            if (!bc_io_file_stat_if_unknown(directory_file_descriptor, current_entry.name, &entry_type, &resolved_device_id, &resolved_inode_number,
-                                            &resolved_file_size, &modification_time_value)) {
+            if (!bc_io_file_stat_if_unknown(directory_file_descriptor, current_entry.name, &entry_type, &resolved_device_id,
+                                            &resolved_inode_number, &resolved_file_size, &modification_time_value)) {
                 bc_io_walk_report_error(shared, child_path_buffer, "stat", errno);
                 continue;
             }
@@ -153,10 +154,8 @@ static void bc_io_walk_process_directory(bc_io_walk_shared_t* shared, const char
         bc_io_walk_entry_kind_t entry_kind = BC_IO_WALK_ENTRY_OTHER;
         bc_io_walk_entry_kind_from_type(entry_type, &entry_kind);
 
-        bool needs_stat = !stat_populated
-                          && (entry_kind == BC_IO_WALK_ENTRY_FILE
-                              || entry_kind == BC_IO_WALK_ENTRY_DIRECTORY
-                              || (entry_kind == BC_IO_WALK_ENTRY_SYMLINK && shared->config->follow_symlinks));
+        bool needs_stat = !stat_populated && (entry_kind == BC_IO_WALK_ENTRY_FILE || entry_kind == BC_IO_WALK_ENTRY_DIRECTORY ||
+                                              (entry_kind == BC_IO_WALK_ENTRY_SYMLINK && shared->config->follow_symlinks));
         if (needs_stat) {
             int stat_flags = shared->config->follow_symlinks ? 0 : AT_SYMLINK_NOFOLLOW;
             struct stat stat_buffer;
@@ -290,7 +289,8 @@ bool bc_io_walk_parallel(const bc_io_walk_config_t* config, bc_io_walk_stats_t* 
     atomic_store_explicit(&shared.errors_encountered, 0, memory_order_relaxed);
     atomic_store_explicit(&shared.visit_failed, 0, memory_order_relaxed);
 
-    if (!bc_concurrency_queue_create(config->main_memory_context, sizeof(bc_io_walk_queue_entry_t), queue_capacity, &shared.directory_queue)) {
+    if (!bc_concurrency_queue_create(config->main_memory_context, sizeof(bc_io_walk_queue_entry_t), queue_capacity,
+                                     &shared.directory_queue)) {
         return false;
     }
 

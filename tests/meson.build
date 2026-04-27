@@ -199,3 +199,9 @@ test_bc_io_walk_parallel = executable('test_bc_io_walk_parallel',
     dependencies : [cmocka_dep, bc_io_dep, bc_concurrency_dep],
 )
 test('bc_io_walk_parallel', test_bc_io_walk_parallel)
+
+test_bc_io_random = executable('test_bc_io_random',
+    'test_bc_io_random.c',
+    dependencies : [cmocka_dep, bc_io_dep, dependency('threads')],
+)
+test('bc_io_random', test_bc_io_random)
