@@ -18,3 +18,10 @@ benchmark('bench_bc_io_file_ops',
     ),
     timeout : 120,
 )
+
+benchmark('bench_bc_io_vs_libc',
+    executable('bench_bc_io_vs_libc', 'bench_bc_io_vs_libc.c',
+        dependencies : [bc_io_dep],
+    ),
+    timeout : 600,
+)
