@@ -4,7 +4,6 @@
 
 #include "bc_io_dirent_reader.h"
 #include "bc_io_file.h"
-#include "bc_io_file_path.h"
 
 #include "bc_concurrency.h"
 #include "bc_concurrency_signal.h"
@@ -184,8 +183,8 @@ static void bc_io_walk_process_directory(bc_io_walk_shared_t* shared, const char
             .kind = entry_kind,
             .file_size = resolved_file_size,
             .depth = directory_depth + 1U,
-            .device_id = resolved_device_id,
-            .inode_number = resolved_inode_number,
+            .device_id = (unsigned long long)resolved_device_id,
+            .inode_number = (unsigned long long)resolved_inode_number,
             .modification_time_seconds = resolved_modification_time,
             .permission_mask = resolved_permission_mask,
             .stat_populated = stat_populated,

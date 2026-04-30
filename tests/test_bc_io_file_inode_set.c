@@ -2,6 +2,7 @@
 
 #include "bc_core.h"
 #include "bc_io_file.h"
+#include "bc_io_file_inode.h"
 #include "bc_allocators.h"
 
 #include <setjmp.h>

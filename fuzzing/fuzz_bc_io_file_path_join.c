@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-#include "bc_io_file_path.h"
+#include "bc_io_file.h"
 
 #include <stdint.h>
 #include <stdio.h>

@@ -10,7 +10,6 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <sys/types.h>
 
 typedef enum {
     BC_IO_WALK_ENTRY_FILE,
@@ -25,8 +24,8 @@ typedef struct bc_io_walk_entry {
     bc_io_walk_entry_kind_t kind;
     size_t file_size;
     size_t depth;
-    dev_t device_id;
-    ino_t inode_number;
+    unsigned long long device_id;
+    unsigned long long inode_number;
     long modification_time_seconds;
     unsigned int permission_mask;
     bool stat_populated;
@@ -70,5 +69,7 @@ typedef struct bc_io_walk_stats {
 } bc_io_walk_stats_t;
 
 bool bc_io_walk_parallel(const bc_io_walk_config_t* config, bc_io_walk_stats_t* out_stats);
+
+bool bc_io_walk_sequential(const bc_io_walk_config_t* config, bc_io_walk_stats_t* out_stats);
 
 #endif /* BC_IO_WALK_H */
