@@ -2,12 +2,24 @@
 
 #include "bc_io_dirent_reader.h"
 
+#include "bc_allocators_pool.h"
 #include "bc_core.h"
 
 #include <errno.h>
 #include <stdint.h>
 #include <sys/syscall.h>
+#include <sys/types.h>
 #include <unistd.h>
+
+#define BC_IO_DIRENT_READER_BUFFER_SIZE ((size_t)8192)
+
+struct bc_io_dirent_reader {
+    int dir_fd;
+    int last_errno;
+    ssize_t buffer_used;
+    size_t cursor;
+    char buffer[BC_IO_DIRENT_READER_BUFFER_SIZE];
+};
 
 struct bc_io_linux_dirent64 {
     /* cppcheck-suppress unusedStructMember; required by kernel ABI */
@@ -19,7 +31,30 @@ struct bc_io_linux_dirent64 {
     char d_name[];
 };
 
-void bc_io_dirent_reader_init(bc_io_dirent_reader_t* reader, int dir_fd)
+bool bc_io_dirent_reader_create(bc_allocators_context_t* memory_context, int dir_fd, bc_io_dirent_reader_t** out_reader)
+{
+    *out_reader = NULL;
+    bc_io_dirent_reader_t* reader = NULL;
+    if (!bc_allocators_pool_allocate(memory_context, sizeof(*reader), (void**)&reader)) {
+        return false;
+    }
+    reader->dir_fd = dir_fd;
+    reader->last_errno = 0;
+    reader->buffer_used = 0;
+    reader->cursor = 0;
+    *out_reader = reader;
+    return true;
+}
+
+void bc_io_dirent_reader_destroy(bc_allocators_context_t* memory_context, bc_io_dirent_reader_t* reader)
+{
+    if (reader == NULL) {
+        return;
+    }
+    bc_allocators_pool_free(memory_context, reader);
+}
+
+void bc_io_dirent_reader_reset(bc_io_dirent_reader_t* reader, int dir_fd)
 {
     reader->dir_fd = dir_fd;
     reader->last_errno = 0;
@@ -64,4 +99,10 @@ bool bc_io_dirent_reader_next(bc_io_dirent_reader_t* reader, bc_io_dirent_entry_
         *out_has_entry = true;
         return true;
     }
+}
+
+bool bc_io_dirent_reader_last_errno(const bc_io_dirent_reader_t* reader, int* out_errno)
+{
+    *out_errno = reader->last_errno;
+    return true;
 }

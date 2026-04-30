@@ -80,8 +80,12 @@ static void bc_io_walk_sequential_recurse(bc_io_walk_sequential_state_t* state, 
 
     state->stats.directories_visited += 1;
 
-    bc_io_dirent_reader_t dirent_reader;
-    bc_io_dirent_reader_init(&dirent_reader, directory_file_descriptor);
+    bc_io_dirent_reader_t* dirent_reader = NULL;
+    if (!bc_io_dirent_reader_create(state->config->main_memory_context, directory_file_descriptor, &dirent_reader)) {
+        bc_io_walk_sequential_report_error(state, directory_path, "dirent-reader-alloc", ENOMEM);
+        close(directory_file_descriptor);
+        return;
+    }
 
     for (;;) {
         if (state->visit_failed) {
@@ -93,8 +97,10 @@ static void bc_io_walk_sequential_recurse(bc_io_walk_sequential_state_t* state, 
 
         bc_io_dirent_entry_t current_entry;
         bool has_entry = false;
-        if (!bc_io_dirent_reader_next(&dirent_reader, &current_entry, &has_entry)) {
-            bc_io_walk_sequential_report_error(state, directory_path, "getdents64", dirent_reader.last_errno);
+        if (!bc_io_dirent_reader_next(dirent_reader, &current_entry, &has_entry)) {
+            int reader_errno = 0;
+            bc_io_dirent_reader_last_errno(dirent_reader, &reader_errno);
+            bc_io_walk_sequential_report_error(state, directory_path, "getdents64", reader_errno);
             break;
         }
         if (!has_entry) {
@@ -206,6 +212,7 @@ static void bc_io_walk_sequential_recurse(bc_io_walk_sequential_state_t* state, 
         }
     }
 
+    bc_io_dirent_reader_destroy(state->config->main_memory_context, dirent_reader);
     close(directory_file_descriptor);
 }
 
@@ -215,6 +222,9 @@ bool bc_io_walk_sequential(const bc_io_walk_config_t* config, bc_io_walk_stats_t
         return false;
     }
     if (config->visit == NULL) {
+        return false;
+    }
+    if (config->main_memory_context == NULL) {
         return false;
     }
 
