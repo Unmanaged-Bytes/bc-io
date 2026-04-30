@@ -2,7 +2,6 @@
 
 #include "bc_allocators.h"
 #include "bc_io_file.h"
-#include "bc_io_file_open.h"
 #include "bc_io_mmap.h"
 #include "bc_io_stream.h"
 

@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: MIT
 
-#include "bc_io_file_open.h"
+#include "bc_io_file.h"
 
 #include "bc_io_file_internal.h"
 
-#include "bc_io_file_path.h"
 #include "bc_io_mmap.h"
 #include "bc_allocators.h"
 #include "bc_allocators_pool.h"
