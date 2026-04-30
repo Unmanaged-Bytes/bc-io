@@ -5,7 +5,6 @@
 
 #include "bc_allocators.h"
 #include "bc_concurrency.h"
-#include "bc_concurrency_signal.h"
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -34,6 +33,7 @@ typedef struct bc_io_walk_entry {
 typedef bool (*bc_io_walk_filter_fn)(const bc_io_walk_entry_t* entry, void* user_data);
 typedef bool (*bc_io_walk_visit_fn)(const bc_io_walk_entry_t* entry, void* user_data);
 typedef bool (*bc_io_walk_should_descend_fn)(const bc_io_walk_entry_t* entry, void* user_data);
+typedef bool (*bc_io_walk_should_stop_fn)(void* user_data);
 typedef void (*bc_io_walk_error_fn)(const char* path, const char* stage, int errno_value, void* user_data);
 
 typedef struct bc_io_walk_config {
@@ -42,7 +42,9 @@ typedef struct bc_io_walk_config {
 
     bc_allocators_context_t* main_memory_context;
     bc_concurrency_context_t* concurrency_context;
-    bc_concurrency_signal_handler_t* signal_handler;
+
+    bc_io_walk_should_stop_fn should_stop_check;
+    void* should_stop_user_data;
 
     size_t queue_capacity;
     bool follow_symlinks;

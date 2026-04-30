@@ -5,7 +5,6 @@
 #include "bc_io_dirent_reader.h"
 #include "bc_io_file.h"
 
-#include "bc_concurrency_signal.h"
 #include "bc_core.h"
 
 #include <dirent.h>
@@ -23,12 +22,10 @@ typedef struct bc_io_walk_sequential_state {
 
 static bool bc_io_walk_sequential_should_stop(const bc_io_walk_sequential_state_t* state)
 {
-    if (state->config->signal_handler == NULL) {
+    if (state->config->should_stop_check == NULL) {
         return false;
     }
-    bool should_stop = false;
-    bc_concurrency_signal_handler_should_stop(state->config->signal_handler, &should_stop);
-    return should_stop;
+    return state->config->should_stop_check(state->config->should_stop_user_data);
 }
 
 static void bc_io_walk_sequential_report_error(bc_io_walk_sequential_state_t* state, const char* path, const char* stage, int errno_value)
