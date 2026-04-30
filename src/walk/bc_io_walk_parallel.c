@@ -82,8 +82,8 @@ static bool bc_io_walk_entry_kind_from_type(bc_io_file_entry_type_t type, bc_io_
     }
 }
 
-static void bc_io_walk_process_directory(bc_io_walk_shared_t* shared, const char* directory_path, size_t directory_path_length,
-                                         size_t directory_depth)
+static void bc_io_walk_process_directory(bc_io_walk_shared_t* shared, bc_io_dirent_reader_t* dirent_reader, const char* directory_path,
+                                         size_t directory_path_length, size_t directory_depth)
 {
     if (atomic_load_explicit(&shared->visit_failed, memory_order_relaxed)) {
         return;
@@ -101,8 +101,7 @@ static void bc_io_walk_process_directory(bc_io_walk_shared_t* shared, const char
 
     atomic_fetch_add_explicit(&shared->directories_visited, 1, memory_order_relaxed);
 
-    bc_io_dirent_reader_t dirent_reader;
-    bc_io_dirent_reader_init(&dirent_reader, directory_file_descriptor);
+    bc_io_dirent_reader_reset(dirent_reader, directory_file_descriptor);
 
     for (;;) {
         if (atomic_load_explicit(&shared->visit_failed, memory_order_relaxed)) {
@@ -111,8 +110,10 @@ static void bc_io_walk_process_directory(bc_io_walk_shared_t* shared, const char
 
         bc_io_dirent_entry_t current_entry;
         bool has_entry = false;
-        if (!bc_io_dirent_reader_next(&dirent_reader, &current_entry, &has_entry)) {
-            bc_io_walk_report_error(shared, directory_path, "getdents64", dirent_reader.last_errno);
+        if (!bc_io_dirent_reader_next(dirent_reader, &current_entry, &has_entry)) {
+            int reader_errno = 0;
+            bc_io_dirent_reader_last_errno(dirent_reader, &reader_errno);
+            bc_io_walk_report_error(shared, directory_path, "getdents64", reader_errno);
             break;
         }
         if (!has_entry) {
@@ -228,7 +229,18 @@ static void bc_io_walk_process_directory(bc_io_walk_shared_t* shared, const char
             atomic_fetch_add_explicit(&shared->outstanding_directory_count, 1, memory_order_relaxed);
             if (!bc_concurrency_queue_push(shared->directory_queue, &sub_entry)) {
                 atomic_fetch_sub_explicit(&shared->outstanding_directory_count, 1, memory_order_relaxed);
-                bc_io_walk_process_directory(shared, sub_entry.absolute_path, sub_entry.absolute_path_length, sub_entry.depth);
+                bc_allocators_context_t* fallback_memory = bc_concurrency_worker_memory();
+                if (fallback_memory == NULL) {
+                    fallback_memory = shared->config->main_memory_context;
+                }
+                bc_io_dirent_reader_t* fallback_reader = NULL;
+                if (bc_io_dirent_reader_create(fallback_memory, -1, &fallback_reader)) {
+                    bc_io_walk_process_directory(shared, fallback_reader, sub_entry.absolute_path, sub_entry.absolute_path_length,
+                                                 sub_entry.depth);
+                    bc_io_dirent_reader_destroy(fallback_memory, fallback_reader);
+                } else {
+                    bc_io_walk_report_error(shared, sub_entry.absolute_path, "dirent-reader-alloc", ENOMEM);
+                }
             }
         }
     }
@@ -240,28 +252,45 @@ static void bc_io_walk_worker_task(void* task_argument)
 {
     bc_io_walk_shared_t* shared = (bc_io_walk_shared_t*)task_argument;
 
+    bc_allocators_context_t* worker_memory = bc_concurrency_worker_memory();
+    if (worker_memory == NULL) {
+        worker_memory = shared->config->main_memory_context;
+    }
+
+    bc_io_dirent_reader_t* dirent_reader = NULL;
+    if (!bc_io_dirent_reader_create(worker_memory, -1, &dirent_reader)) {
+        atomic_fetch_add_explicit(&shared->errors_encountered, 1, memory_order_relaxed);
+        atomic_store_explicit(&shared->visit_failed, 1, memory_order_relaxed);
+        if (shared->config->on_error != NULL) {
+            shared->config->on_error(shared->config->root, "dirent-reader-alloc", ENOMEM, shared->config->error_user_data);
+        }
+        return;
+    }
+
     for (;;) {
         if (bc_io_walk_should_stop(shared)) {
-            return;
+            break;
         }
         if (atomic_load_explicit(&shared->visit_failed, memory_order_relaxed)) {
-            return;
+            break;
         }
 
         bc_io_walk_queue_entry_t entry;
         if (bc_concurrency_queue_pop(shared->directory_queue, &entry)) {
-            bc_io_walk_process_directory(shared, entry.absolute_path, entry.absolute_path_length, entry.depth);
+            bc_io_walk_process_directory(shared, dirent_reader, entry.absolute_path, entry.absolute_path_length, entry.depth);
             atomic_fetch_sub_explicit(&shared->outstanding_directory_count, 1, memory_order_release);
             continue;
         }
         int outstanding = atomic_load_explicit(&shared->outstanding_directory_count, memory_order_acquire);
         if (outstanding == 0) {
-            return;
+            break;
         }
         for (int spin = 0; spin < BC_IO_WALK_TERMINATION_SPIN_PAUSES; ++spin) {
             bc_core_spin_pause();
         }
     }
+
+    bc_io_dirent_reader_destroy(worker_memory, dirent_reader);
 }
 
 bool bc_io_walk_parallel(const bc_io_walk_config_t* config, bc_io_walk_stats_t* out_stats)
