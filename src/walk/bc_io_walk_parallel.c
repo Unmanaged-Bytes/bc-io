@@ -6,7 +6,6 @@
 #include "bc_io_file.h"
 
 #include "bc_concurrency.h"
-#include "bc_concurrency_signal.h"
 #include "bc_core.h"
 
 #include <dirent.h>
@@ -39,12 +38,10 @@ typedef struct bc_io_walk_shared {
 
 static bool bc_io_walk_should_stop(const bc_io_walk_shared_t* shared)
 {
-    if (shared->config->signal_handler == NULL) {
+    if (shared->config->should_stop_check == NULL) {
         return false;
     }
-    bool should_stop = false;
-    bc_concurrency_signal_handler_should_stop(shared->config->signal_handler, &should_stop);
-    return should_stop;
+    return shared->config->should_stop_check(shared->config->should_stop_user_data);
 }
 
 static void bc_io_walk_report_error(bc_io_walk_shared_t* shared, const char* path, const char* stage, int errno_value)
