@@ -13,8 +13,9 @@
 // 3. __wrap_* stubs in test files : linker-level intercept hooks activated
 //    via -Wl,--wrap= and never called directly from C code.
 
-// --- bc-core inline helpers ---
+// --- bc-core / bc-allocators inline helpers ---
 unusedFunction:*/bc_core_math.h
+unusedFunction:*/bc_allocators_context.h
 
 // --- Public API functions in bc-io sources themselves ---
 // cppcheck analyses the lib in isolation via compile_commands.json
