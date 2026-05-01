@@ -50,7 +50,7 @@ typedef struct bc_io_file_read_handle bc_io_file_read_handle_t;
 bool bc_io_file_open_auto(bc_allocators_context_t* memory_context, const char* path, size_t mmap_threshold,
                           const bc_io_file_open_options_t* options, bc_io_file_read_handle_t** out_handle);
 
-bool bc_io_file_read_handle_get_stream(bc_io_file_read_handle_t* handle, bc_io_stream_t** out_stream);
+bool bc_io_file_read_handle_get_stream(const bc_io_file_read_handle_t* handle, bc_io_stream_t** out_stream);
 
 bool bc_io_file_read_handle_is_memory_mapped(const bc_io_file_read_handle_t* handle, bool* out_is_mapped);
 

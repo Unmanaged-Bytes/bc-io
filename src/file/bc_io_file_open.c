@@ -174,7 +174,7 @@ bool bc_io_file_open_auto(bc_allocators_context_t* memory_context, const char* p
     return true;
 }
 
-bool bc_io_file_read_handle_get_stream(bc_io_file_read_handle_t* handle, bc_io_stream_t** out_stream)
+bool bc_io_file_read_handle_get_stream(const bc_io_file_read_handle_t* handle, bc_io_stream_t** out_stream)
 {
     *out_stream = handle->stream;
     return true;
