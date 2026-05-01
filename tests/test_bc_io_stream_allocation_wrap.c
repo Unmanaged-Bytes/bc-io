@@ -8,6 +8,7 @@
 #include "bc_allocators_pool.h"
 
 #include "bc_core.h"
+#include "bc_core_test_wrap.h"
 
 #include <errno.h>
 #include <fcntl.h>
@@ -21,58 +22,23 @@
 
 #include <cmocka.h>
 
-/* ===== Mock infrastructure: bc_allocators_pool_allocate ===== */
+BC_TEST_WRAP_FAIL_ON_CALL(bc_allocators_pool_allocate, bool, false,
+                          (bc_allocators_context_t* context, size_t size, void** out_pointer),
+                          (context, size, out_pointer))
 
-static int mock_pool_allocate_fail_at_call = -1;
-static int mock_pool_allocate_call_count = 0;
+BC_TEST_WRAP_SHOULD_FAIL(bc_allocators_arena_create, bool, false,
+                         (bc_allocators_context_t* context, size_t capacity, bc_allocators_arena_t** out_arena),
+                         (context, capacity, out_arena))
 
-bool __real_bc_allocators_pool_allocate(bc_allocators_context_t* context, size_t size, void** out_pointer);
-
-bool __wrap_bc_allocators_pool_allocate(bc_allocators_context_t* context, size_t size, void** out_pointer)
-{
-    mock_pool_allocate_call_count++;
-    if (mock_pool_allocate_call_count == mock_pool_allocate_fail_at_call) {
-        return false;
-    }
-    return __real_bc_allocators_pool_allocate(context, size, out_pointer);
-}
-
-/* ===== Mock infrastructure: bc_allocators_arena_create ===== */
-
-static bool mock_arena_create_should_fail = false;
-
-bool __real_bc_allocators_arena_create(bc_allocators_context_t* context, size_t capacity, bc_allocators_arena_t** out_arena);
-
-bool __wrap_bc_allocators_arena_create(bc_allocators_context_t* context, size_t capacity, bc_allocators_arena_t** out_arena)
-{
-    if (mock_arena_create_should_fail) {
-        return false;
-    }
-    return __real_bc_allocators_arena_create(context, capacity, out_arena);
-}
-
-/* ===== Mock infrastructure: bc_allocators_arena_allocate ===== */
-
-static bool mock_arena_alloc_should_fail = false;
-
-bool __real_bc_allocators_arena_allocate(bc_allocators_arena_t* arena, size_t size, size_t alignment, void** out_pointer);
-
-bool __wrap_bc_allocators_arena_allocate(bc_allocators_arena_t* arena, size_t size, size_t alignment, void** out_pointer)
-{
-    if (mock_arena_alloc_should_fail) {
-        return false;
-    }
-    return __real_bc_allocators_arena_allocate(arena, size, alignment, out_pointer);
-}
-
-/* ===== Reset ===== */
+BC_TEST_WRAP_SHOULD_FAIL(bc_allocators_arena_allocate, bool, false,
+                         (bc_allocators_arena_t* arena, size_t size, size_t alignment, void** out_pointer),
+                         (arena, size, alignment, out_pointer))
 
 static void reset_mocks(void)
 {
-    mock_pool_allocate_fail_at_call = -1;
-    mock_pool_allocate_call_count = 0;
-    mock_arena_create_should_fail = false;
-    mock_arena_alloc_should_fail = false;
+    BC_TEST_WRAP_RESET_FAIL_ON_CALL(bc_allocators_pool_allocate);
+    BC_TEST_WRAP_RESET_SHOULD_FAIL(bc_allocators_arena_create);
+    BC_TEST_WRAP_RESET_SHOULD_FAIL(bc_allocators_arena_allocate);
 }
 
 /* ===== Helper: create temporary file ===== */
@@ -108,7 +74,7 @@ static void test_open_pool_allocate_fails(void** state)
     bc_allocators_context_t* memory_context = NULL;
     assert_true(bc_allocators_context_create(NULL, &memory_context));
 
-    mock_pool_allocate_fail_at_call = mock_pool_allocate_call_count + 1;
+    bc_allocators_pool_allocate_fail_on_call = bc_allocators_pool_allocate_call_count + 1;
 
     bc_io_stream_t* stream = NULL;
     bool result = bc_io_stream_open_file(memory_context, temporary_file_path, BC_IO_STREAM_MODE_READ, 0, &stream);
@@ -132,7 +98,7 @@ static void test_open_arena_create_fails(void** state)
     bc_allocators_context_t* memory_context = NULL;
     assert_true(bc_allocators_context_create(NULL, &memory_context));
 
-    mock_arena_create_should_fail = true;
+    mock_bc_allocators_arena_create_should_fail = true;
 
     bc_io_stream_t* stream = NULL;
     bool result = bc_io_stream_open_file(memory_context, temporary_file_path, BC_IO_STREAM_MODE_READ, 0, &stream);
@@ -156,7 +122,7 @@ static void test_open_arena_alloc_fails(void** state)
     bc_allocators_context_t* memory_context = NULL;
     assert_true(bc_allocators_context_create(NULL, &memory_context));
 
-    mock_arena_alloc_should_fail = true;
+    mock_bc_allocators_arena_allocate_should_fail = true;
 
     bc_io_stream_t* stream = NULL;
     bool result = bc_io_stream_open_file(memory_context, temporary_file_path, BC_IO_STREAM_MODE_READ, 0, &stream);
@@ -182,7 +148,7 @@ static void test_open_fd_pool_allocate_fails(void** state)
     int fd = open(temporary_file_path, O_RDONLY | O_CLOEXEC);
     assert_true(fd >= 0);
 
-    mock_pool_allocate_fail_at_call = mock_pool_allocate_call_count + 1;
+    bc_allocators_pool_allocate_fail_on_call = bc_allocators_pool_allocate_call_count + 1;
 
     bc_io_stream_t* stream = NULL;
     bool result = bc_io_stream_open_file_descriptor(memory_context, fd, BC_IO_STREAM_SOURCE_FILE, BC_IO_STREAM_MODE_READ, 0, &stream);
@@ -209,7 +175,7 @@ static void test_open_fd_arena_create_fails(void** state)
     int fd = open(temporary_file_path, O_RDONLY | O_CLOEXEC);
     assert_true(fd >= 0);
 
-    mock_arena_create_should_fail = true;
+    mock_bc_allocators_arena_create_should_fail = true;
 
     bc_io_stream_t* stream = NULL;
     bool result = bc_io_stream_open_file_descriptor(memory_context, fd, BC_IO_STREAM_SOURCE_FILE, BC_IO_STREAM_MODE_READ, 0, &stream);
@@ -236,7 +202,7 @@ static void test_open_fd_arena_alloc_fails(void** state)
     int fd = open(temporary_file_path, O_RDONLY | O_CLOEXEC);
     assert_true(fd >= 0);
 
-    mock_arena_alloc_should_fail = true;
+    mock_bc_allocators_arena_allocate_should_fail = true;
 
     bc_io_stream_t* stream = NULL;
     bool result = bc_io_stream_open_file_descriptor(memory_context, fd, BC_IO_STREAM_SOURCE_FILE, BC_IO_STREAM_MODE_READ, 0, &stream);
@@ -261,7 +227,7 @@ static void test_open_memory_pool_allocate_fails(void** state)
 
     const char* data = "test memory data";
 
-    mock_pool_allocate_fail_at_call = mock_pool_allocate_call_count + 1;
+    bc_allocators_pool_allocate_fail_on_call = bc_allocators_pool_allocate_call_count + 1;
 
     bc_io_stream_t* stream = NULL;
     size_t data_length = 0;

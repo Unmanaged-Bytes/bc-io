@@ -9,21 +9,16 @@
 #include "bc_io_file_inode.h"
 #include "bc_allocators.h"
 #include "bc_allocators_pool.h"
+#include "bc_core_test_wrap.h"
 
 #include <pthread.h>
 #include <stdbool.h>
 #include <stdint.h>
 
-/* ===== Mocks ===== */
+/* ===== Wrap: bc_allocators_pool_allocate (NULL-set out_ptr divergent — kept manual) ===== */
 
 static int g_pool_allocate_call_count = 0;
 static int g_pool_allocate_fail_on_call = -1;
-
-static int g_safe_multiply_call_count = 0;
-static int g_safe_multiply_fail_on_call = -1;
-
-static int g_safe_add_call_count = 0;
-static int g_safe_add_fail_on_call = -1;
 
 bool __real_bc_allocators_pool_allocate(bc_allocators_context_t* ctx, size_t size, void** out_ptr);
 
@@ -37,36 +32,20 @@ bool __wrap_bc_allocators_pool_allocate(bc_allocators_context_t* ctx, size_t siz
     return __real_bc_allocators_pool_allocate(ctx, size, out_ptr);
 }
 
-bool __real_bc_core_safe_multiply(size_t a, size_t b, size_t* out_result);
+BC_TEST_WRAP_FAIL_ON_CALL(bc_core_safe_multiply, bool, false,
+                          (size_t a, size_t b, size_t* out_result),
+                          (a, b, out_result))
 
-bool __wrap_bc_core_safe_multiply(size_t a, size_t b, size_t* out_result)
-{
-    g_safe_multiply_call_count++;
-    if (g_safe_multiply_call_count == g_safe_multiply_fail_on_call) {
-        return false;
-    }
-    return __real_bc_core_safe_multiply(a, b, out_result);
-}
-
-bool __real_bc_core_safe_add(size_t a, size_t b, size_t* out_result);
-
-bool __wrap_bc_core_safe_add(size_t a, size_t b, size_t* out_result)
-{
-    g_safe_add_call_count++;
-    if (g_safe_add_call_count == g_safe_add_fail_on_call) {
-        return false;
-    }
-    return __real_bc_core_safe_add(a, b, out_result);
-}
+BC_TEST_WRAP_FAIL_ON_CALL(bc_core_safe_add, bool, false,
+                          (size_t a, size_t b, size_t* out_result),
+                          (a, b, out_result))
 
 static void reset_mocks(void)
 {
     g_pool_allocate_call_count = 0;
     g_pool_allocate_fail_on_call = -1;
-    g_safe_multiply_call_count = 0;
-    g_safe_multiply_fail_on_call = -1;
-    g_safe_add_call_count = 0;
-    g_safe_add_fail_on_call = -1;
+    BC_TEST_WRAP_RESET_FAIL_ON_CALL(bc_core_safe_multiply);
+    BC_TEST_WRAP_RESET_FAIL_ON_CALL(bc_core_safe_add);
 }
 
 static bc_allocators_context_t* create_memory(void)
@@ -113,7 +92,7 @@ static void test_inode_set_create_buckets_safe_multiply_overflow(void** state)
 
     /* First safe_multiply call is inside allocate_buckets: fail it to cover
        the overflow branch. */
-    g_safe_multiply_fail_on_call = 1;
+    bc_core_safe_multiply_fail_on_call = 1;
     bc_io_file_inode_set_t* set = NULL;
     assert_false(bc_io_file_inode_set_create(memory, 16, &set));
 
@@ -127,7 +106,7 @@ static void test_inode_set_create_buckets_safe_add_overflow(void** state)
     bc_allocators_context_t* memory = create_memory();
 
     /* safe_multiply succeeds, safe_add fails in allocate_buckets. */
-    g_safe_add_fail_on_call = 1;
+    bc_core_safe_add_fail_on_call = 1;
     bc_io_file_inode_set_t* set = NULL;
     assert_false(bc_io_file_inode_set_create(memory, 16, &set));
 
