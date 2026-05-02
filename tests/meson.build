@@ -223,3 +223,9 @@ test_bc_io_path = executable('test_bc_io_path',
     dependencies : [cmocka_dep, bc_io_dep],
 )
 test('bc_io_path', test_bc_io_path)
+
+test_bc_io_file_stat = executable('test_bc_io_file_stat',
+    'test_bc_io_file_stat.c',
+    dependencies : [cmocka_dep, bc_io_dep],
+)
+test('bc_io_file_stat', test_bc_io_file_stat)

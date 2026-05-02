@@ -6,6 +6,7 @@
 #include "bc_io_dirent_reader.h"
 #include "bc_io_file.h"
 #include "bc_io_file_inode.h"
+#include "bc_io_file_stat.h"
 #include "bc_io_mmap.h"
 #include "bc_io_path.h"
 #include "bc_io_perm.h"
