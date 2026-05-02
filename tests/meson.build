@@ -211,3 +211,9 @@ test_bc_io_random = executable('test_bc_io_random',
     dependencies : [cmocka_dep, bc_io_dep, dependency('threads')],
 )
 test('bc_io_random', test_bc_io_random)
+
+test_bc_io_perm = executable('test_bc_io_perm',
+    'test_bc_io_perm.c',
+    dependencies : [cmocka_dep, bc_io_dep],
+)
+test('bc_io_perm', test_bc_io_perm)
