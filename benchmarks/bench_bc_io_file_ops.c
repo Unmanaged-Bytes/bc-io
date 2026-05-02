@@ -76,7 +76,7 @@ static void bench_map_file(void)
     bc_allocators_context_t* ctx = NULL;
     bc_allocators_context_create(NULL, &ctx);
 
-    const char* path = "/tmp/bc_bench_map.dat";
+    const char* path = "/var/benchmarks/bc_bench_map.dat";
     size_t file_size = 16 * 1024 * 1024;
 
     int fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);

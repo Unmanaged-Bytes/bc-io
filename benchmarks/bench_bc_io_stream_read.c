@@ -191,7 +191,7 @@ static void bench_stream_memory_vs_copy(const char* label, size_t size, size_t i
 
 int main(void)
 {
-    const char* path = "/tmp/bc_bench_stream.dat";
+    const char* path = "/var/benchmarks/bc_bench_stream.dat";
     size_t file_size = 64 * 1024 * 1024;
 
     printf("bench_stream_read (%zu MB file)\n\n", file_size / (1024 * 1024));

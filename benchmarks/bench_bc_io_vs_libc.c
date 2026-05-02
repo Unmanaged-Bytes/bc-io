@@ -396,7 +396,7 @@ int main(void)
 
     printf("--- walk 10000 files (100 dirs x 100 files) ---\n");
     char fixture[256];
-    snprintf(fixture, sizeof(fixture), "/tmp/bc-io-bench-fixture-%d", getpid());
+    snprintf(fixture, sizeof(fixture), "/var/benchmarks/bc-io-bench-fixture-%d", getpid());
     if (build_fixture(fixture) != 0) {
         fprintf(stderr, "fixture build failed\n");
         cleanup_fixture(fixture);
@@ -413,7 +413,7 @@ int main(void)
     cleanup_fixture(fixture);
 
     printf("\n--- stream sequential read 64 MB file ---\n");
-    const char* stream_path = "/tmp/bc-io-bench-stream.dat";
+    const char* stream_path = "/var/benchmarks/bc-io-bench-stream.dat";
     size_t file_size = 64 * 1024 * 1024;
     create_test_file(stream_path, file_size);
 

@@ -189,7 +189,7 @@ static void bench_stream_multi_open(size_t num_streams, size_t iters)
 
 int main(void)
 {
-    const char* write_path = "/tmp/bc_bench_stream_write.dat";
+    const char* write_path = "/var/benchmarks/bc_bench_stream_write.dat";
     const size_t file_size = 64 * 1024 * 1024;
 
     printf("bench_stream_write\n\n");
