@@ -7,6 +7,7 @@
 #include "bc_io_file.h"
 #include "bc_io_file_inode.h"
 #include "bc_io_mmap.h"
+#include "bc_io_path.h"
 #include "bc_io_perm.h"
 #include "bc_io_random.h"
 #include "bc_io_stream.h"
